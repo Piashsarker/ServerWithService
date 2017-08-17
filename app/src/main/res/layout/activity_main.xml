@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context="com.dcastalia.serverwithservice.MainActivity">
+
+
+
+
+    <Button
+        android:id="@+id/btnStartServer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="startServer"
+        android:text="@string/start_server"/>
+
+
+    <Button
+        android:id="@+id/btnStopSerer"
+        android:layout_width="wrap_content"
+        android:onClick="stopServer"
+        android:layout_height="wrap_content"
+        android:text="@string/close_server"/>
+
+    <Button
+        android:id="@+id/btnMessage"
+        android:onClick="goMessageActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/message"/>
+
+
+</LinearLayout>
