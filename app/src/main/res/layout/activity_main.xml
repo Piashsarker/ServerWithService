@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:layout_margin="20dp"
     android:layout_height="match_parent"
-    tools:context="com.dcastalia.serverwithservice.MainActivity">
+    tools:context="com.dcastalia.serverwithservice.activity.MainActivity">
 
     <TextView
         android:layout_width="wrap_content"

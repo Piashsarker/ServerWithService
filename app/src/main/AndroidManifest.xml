@@ -2,14 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dcastalia.serverwithservice">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
     <application
         android:allowBackup="true"
+        android:name=".Utils.MyApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -18,13 +23,18 @@
         </activity>
 
         <service
-            android:name=".MyService"
+            android:name=".service.MainServiceForServer"
             android:enabled="true"
-            android:exported="true" />
-        <service
-            android:name=".MainServiceForServer"
-            android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true">
+
+        </service>
+        <receiver
+            android:name=".boardcastreceiver.ConnectivityReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
