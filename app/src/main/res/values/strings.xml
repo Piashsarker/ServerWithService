@@ -3,4 +3,8 @@
     <string name="start_server">Start Server</string>
     <string name="close_server">Close Server</string>
     <string name="message">Message</string>
+    <string name="server_ip">Server IP</string>
+    <string name="not_connected">127.0.0.1 ( Not Connected, Sample IP)</string>
+    <string name="port">Port</string>
+    <string name="no_port">NULL ( Not Connected)</string>
 </resources>
