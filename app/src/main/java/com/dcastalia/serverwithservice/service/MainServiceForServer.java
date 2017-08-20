@@ -6,28 +6,17 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.dcastalia.serverwithservice.thread.ClientThread;
+import com.dcastalia.serverwithservice.thread.ServerThread;
 
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.IOException;
 
 public class MainServiceForServer extends Service {
 
     private static  final String TAG = "MainServiceForServer";
-
-    // The server socket.
-    private static ServerSocket serverSocket = null;
-    // The client socket.
-    private static Socket clientSocket = null;
-
-    // This chat server can accept up to maxClientsCount clients' connections.
-    private static final int maxClientsCount = 10;
-    private static final ClientThread[] threads = new ClientThread[maxClientsCount];
-
     private static boolean serviceRunning = false ;
-
-
+    private static ServerThread serverThread ;
     private IBinder binder = new LocalServerBinder();
+
 
     public class LocalServerBinder extends Binder{
         public MainServiceForServer getService(){
@@ -43,14 +32,15 @@ public class MainServiceForServer extends Service {
         Log.d(TAG, "onBinder() Called");
         serviceRunning = true ;
         // Start Server Thread For Listening Client Connection .
-
+        serverThread = new ServerThread(serviceRunning);
+        serverThread.start();
         return this.binder;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
         Log.d(TAG, "onUnbind() Called");
-        serviceRunning = false ;
+         serverThread.closeServer();
         return  true ;
 
     }
@@ -77,11 +67,14 @@ public class MainServiceForServer extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy  Called");
-        serviceRunning = false ;
+        serverThread.closeServer();
         super.onDestroy();
     }
 
 
+    public String getClientList() throws IOException {
+        return  serverThread.printAllClient();
+    }
 
 
 

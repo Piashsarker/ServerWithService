@@ -7,4 +7,6 @@
     <string name="not_connected">127.0.0.1 ( Not Connected, Sample IP)</string>
     <string name="port">Port</string>
     <string name="no_port">NULL ( Not Connected)</string>
+    <string name="client_list">Client list</string>
+    <string name="get_list">Get List</string>
 </resources>

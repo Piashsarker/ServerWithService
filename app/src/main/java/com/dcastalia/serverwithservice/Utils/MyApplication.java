@@ -9,6 +9,8 @@ import com.dcastalia.serverwithservice.boardcastreceiver.ConnectivityReceiver;
  */
 
 public class MyApplication  extends Application{
+
+
     private static MyApplication mInstance;
 
     @Override

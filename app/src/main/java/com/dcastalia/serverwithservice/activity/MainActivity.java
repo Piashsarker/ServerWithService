@@ -12,23 +12,30 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.dcastalia.serverwithservice.service.MainServiceForServer;
-import com.dcastalia.serverwithservice.Utils.MyApplication;
 import com.dcastalia.serverwithservice.R;
+import com.dcastalia.serverwithservice.Utils.Constant;
+import com.dcastalia.serverwithservice.Utils.MyApplication;
 import com.dcastalia.serverwithservice.Utils.Utils;
 import com.dcastalia.serverwithservice.boardcastreceiver.ConnectivityReceiver;
+import com.dcastalia.serverwithservice.service.MainServiceForServer;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity  implements ConnectivityReceiver.ConnectivityReceiverListener{
 
-    private TextView  serverText , portText ;
-    private Button startServerButton , stopServerButton , messageButton ;
+    private TextView  serverText , portText , clientList;
+    private Button startServerButton , stopServerButton , messageButton , getListButton ;
     private String serverIp;
     private View serverPort  ;
     private final String TAG = MainActivity.class.getSimpleName();
     private boolean binded=false;
     private MainServiceForServer serverService;
 
-    ServiceConnection weatherServiceConnection = new ServiceConnection() {
+
+
+
+    // ServiceConnection For Communicating With Service
+    ServiceConnection serverServiceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -52,7 +59,6 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
         setContentView(R.layout.activity_main);
         findViews();
 
-
     }
 
 
@@ -68,13 +74,34 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
         /** Find all views and bind them in local variable to user in future ; **/
 
         serverText = (TextView) findViewById(R.id.txt_server_ip);
-        serverPort = findViewById(R.id.txt_port);
+        portText = (TextView) findViewById(R.id.txt_port);
         startServerButton = (Button) findViewById(R.id.btnStartServer);
         stopServerButton = (Button) findViewById(R.id.btnStopSerer);
         messageButton = (Button) findViewById(R.id.btnMessage);
+        clientList = (TextView) findViewById(R.id.textClientList);
+        getListButton = (Button) findViewById(R.id.btnGetList);
 
         /*** disable some startUp Button **/
         disableSomeButton();
+
+
+        /** Get Client List From The Service **/
+        getListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+
+                    String clientListString  = MainActivity.this.serverService.getClientList().toString() ;
+                    if(clientListString!=null){
+                        clientList.setText(clientListString);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
     }
 
     private void disableSomeButton() {
@@ -106,6 +133,21 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
         else{
             Utils.longToast(this, "Connection Down , Closing All Service and Threads");
             stopServerService();
+
+        }
+        setServerIp(isConnected);
+    }
+
+    private void setServerIp(boolean isConnected) {
+
+        /** If Internet is available than set the serverIp and Port otherwise set deafault **/
+        if(isConnected){
+            serverText.setText(Utils.getWifiIpAddress(this));
+            portText.setText(String.valueOf(Constant.SERVER_MAIN_PORT));
+        }
+        else{
+            serverText.setText(getResources().getString(R.string.not_connected));
+            portText.setText(getResources().getString(R.string.no_port));
         }
     }
 
@@ -113,7 +155,7 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
 
             if (binded) {
                 // Unbind Service
-                this.unbindService(weatherServiceConnection);
+                this.unbindService(serverServiceConnection);
                 binded = false;
                 Utils.log("Service Stopped For Network");
             }
@@ -133,7 +175,7 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
             // Create Intent object for WeatherService.
             Intent intent = new Intent(this, MainServiceForServer.class);
             // Call bindService(..) method to bind service with UI.
-            this.bindService(intent, weatherServiceConnection, Context.BIND_AUTO_CREATE);
+            this.bindService(intent, serverServiceConnection, Context.BIND_AUTO_CREATE);
             Utils.log("Server Service Starting...");
 
             //Disable Start Server Button And Enable Stop and Message Button

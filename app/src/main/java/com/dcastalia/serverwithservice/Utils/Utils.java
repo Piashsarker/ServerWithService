@@ -34,7 +34,7 @@ public class Utils {
     }
 
     public static void log(String message) {
-        Log.d("SERVER", message);
+        Log.e("SERVER", message);
     }
 
     public static boolean isNetworkAvailable(Context context) {
