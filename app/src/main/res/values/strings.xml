@@ -9,4 +9,5 @@
     <string name="no_port">NULL ( Not Connected)</string>
     <string name="client_list">Client list</string>
     <string name="get_list">Get List</string>
+    <string name="no_text">Don\'t Recive Yet.</string>
 </resources>

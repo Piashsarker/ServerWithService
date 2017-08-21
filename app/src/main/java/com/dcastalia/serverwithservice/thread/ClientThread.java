@@ -4,8 +4,6 @@ import com.dcastalia.serverwithservice.Utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -17,38 +15,60 @@ import java.net.Socket;
  * Created by piashsarker on 8/17/17.
  */
 
-public class ClientThread extends  Thread {
+public class ClientThread extends  Thread  {
 
-    private DataInputStream dataInputStream = null;
     private PrintStream printStream = null;
-    private DataOutputStream dataOutputStream = null ;
     private  PrintWriter printWriter = null;
-    public Socket clientSocket = null;
+    public Socket clientSocket;
+    private BufferedReader bufferedIn ;
     public final ClientThread[] threads;
+    public boolean dataReceiving = false;
+    private String message = null ;
+    private ServerThread.ClientMessageReceivedListener clientMessageReceivedListener ;
 
 
     private int maxClientsCount;
 
 
-    public ClientThread(Socket clientSocket , ClientThread[] clientThreads){
+    public ClientThread(Socket clientSocket , ClientThread[] clientThreads, ServerThread.ClientMessageReceivedListener clientMessageReceivedListener){
         this.threads = clientThreads ;
         this.clientSocket = clientSocket;
         maxClientsCount = threads.length;
+        dataReceiving = true ;
+        this.clientMessageReceivedListener= clientMessageReceivedListener;
+
     }
 
     @Override
     public void run() {
-        try {
-            if(!clientSocket.isClosed()){
-                dataInputStream = new DataInputStream(clientSocket.getInputStream());
-                printStream = new PrintStream(clientSocket.getOutputStream());
-                dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+        try{
+
+            while (dataReceiving){
+                /** this code  will listen the incoming message for each client **/
+                if(!clientSocket.isClosed()){
+                    bufferedIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    if(bufferedIn.read()!=-1){
+                        message = bufferedIn.readLine();
+                        if(message!=null && clientMessageReceivedListener!=null){
+                            Utils.log("Message Received : " + message + " from "+ clientSocket.getInetAddress().getHostAddress());
+
+                            /** Pass the message to server  interface so that the class who implement it can listen message **/
+                            clientMessageReceivedListener.clientMessageReceived(message);
+                        }
+                    }
+                    else{
+                        Utils.log("Client Disconnected");
+                        clientSocket.close();
+                        this.interrupt();
+                        dataReceiving= false ;
+                    }
+
+                }
+
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        }catch (IOException ioException){
+            ioException.printStackTrace();
         }
-
     }
 
 
@@ -56,35 +76,28 @@ public class ClientThread extends  Thread {
     public boolean sendData(String data){
         boolean isSent  = false;
         try{
-            printWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())));
-            printWriter.println(data);
-            Utils.log("Data Sending"+ data);
-            isSent = true;
+            if(clientSocket!=null && !clientSocket.isClosed()){
+                printWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())), true);
+                printWriter.println(data);
+                Utils.log("Data Sending"+ data);
+                printWriter.flush();
+                isSent = true;
+            }
+            else{
+                Utils.log("Client Not Online "+ clientSocket.getInetAddress().getHostAddress());
+            }
+
         }
         catch (IOException ex){
             ex.printStackTrace();
+            try {
+                closeClientSocket();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             isSent = false ;
-            printWriter.flush();
-            printWriter.close();
         }
         return  isSent ;
-    }
-
-    public String  receiveData() throws IOException {
-        String data = "";
-        BufferedReader input = null  ;
-        try{
-            input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-           if(input.readLine()!=null){
-               data = input.readLine();
-               Utils.log(" Message From Client "+ data);
-           }
-            input.close();
-        }
-        catch (IOException ex){
-            input.close();
-        }
-        return  data ;
     }
 
 
@@ -92,13 +105,14 @@ public class ClientThread extends  Thread {
    public void closeClientSocket() throws IOException{
 
     /** Close Socket If Connection Is Lost **/
-
-     if(clientSocket!=null && dataInputStream!=null && dataOutputStream!=null && printStream!=null){
-        clientSocket.close();
-        dataInputStream.close();
-        dataOutputStream.close();
-        printStream.close();
+    Utils.log("Client Socket Closing ");
+      dataReceiving = false;
+     if(!clientSocket.isClosed() && clientSocket!=null){
+         printWriter.close();
+         bufferedIn.close();
+         clientSocket.close();
      }
+
 
    }
 

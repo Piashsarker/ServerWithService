@@ -1,16 +1,20 @@
 package com.dcastalia.serverwithservice.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dcastalia.serverwithservice.R;
 import com.dcastalia.serverwithservice.Utils.Constant;
@@ -23,7 +27,7 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity  implements ConnectivityReceiver.ConnectivityReceiverListener{
 
-    private TextView  serverText , portText , clientList;
+    private TextView  serverText , portText , clientList , messageText ;
     private Button startServerButton , stopServerButton , messageButton , getListButton ;
     private String serverIp;
     private View serverPort  ;
@@ -31,6 +35,25 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
     private boolean binded=false;
     private MainServiceForServer serverService;
 
+
+
+    /** This Boardcast Recevier is triggered to get the data from the service **/
+
+    private final BroadcastReceiver serviceMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+            if(action.equals(Constant.ACTION_MESSAGE)){
+                // Toast.makeText(context,, Toast.LENGTH_SHORT).show();
+                String message = intent.getStringExtra(Constant.WELCOME_MESSAGE_KEY);
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                messageText.setText(message);
+
+            }
+
+        }
+    };
 
 
 
@@ -52,7 +75,6 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
 
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +89,19 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
         super.onResume();
         // register connection status listener
         MyApplication.getInstance().setConnectivityListener(this);
+
+        /** Registering BoardCast To Receive Message From The Service **/
+        IntentFilter intentFilter = new IntentFilter(Constant.ACTION_MESSAGE);
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.registerReceiver(serviceMessageReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        /** Must unRegister Receiver When Not Using **/
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.unregisterReceiver(serviceMessageReceiver);
     }
 
     private void findViews() {
@@ -80,6 +115,8 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
         messageButton = (Button) findViewById(R.id.btnMessage);
         clientList = (TextView) findViewById(R.id.textClientList);
         getListButton = (Button) findViewById(R.id.btnGetList);
+        messageText = (TextView) findViewById(R.id.textClientMessage);
+
 
         /*** disable some startUp Button **/
         disableSomeButton();
@@ -101,6 +138,15 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
                 }
             }
         });
+
+      messageButton.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            MainActivity.this.serverService.sendMessage(" A Sample Text To Send .....");
+          }
+      });
+
+
 
     }
 
@@ -127,11 +173,11 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
 
     private void manageServerService(boolean isConnected) {
         if(isConnected){
-            Utils.longToast(this,  "Connection Available For Starting Service");
+            Utils.longToast(this,  "Wifi Available ! Starting Service");
             startServerService();
         }
         else{
-            Utils.longToast(this, "Connection Down , Closing All Service and Threads");
+            Utils.longToast(this, "Disconnected ! Stopping Service ");
             stopServerService();
 
         }
