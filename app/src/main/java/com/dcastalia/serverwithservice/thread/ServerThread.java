@@ -1,5 +1,7 @@
 package com.dcastalia.serverwithservice.thread;
 
+import android.graphics.Bitmap;
+
 import com.dcastalia.serverwithservice.Utils.Constant;
 import com.dcastalia.serverwithservice.Utils.Utils;
 
@@ -58,10 +60,6 @@ public class ServerThread extends  Thread  {
                 /** Remove If the client Has Previous record searching through IP **/
                 removeClient(clientSocket.getInetAddress().getHostAddress());
                 // For client request
-
-
-
-
                 /** Create Client Thread For All Individual Socket **/
                 createThreadForClient(clientSocket);
 
@@ -131,12 +129,14 @@ public class ServerThread extends  Thread  {
             for(int i=0 ; i<threads.length ; i++){
                 if(threads[i]!=null){
                 // Remove the same socket that are same ip address in previous
-
-                    if(threads[i].clientSocket.getInetAddress().getHostAddress().equals(ip)){
-                        threads[i] = null ;
-                        Utils.log(ip+ " Has Record , So  Previous Thread Deleted");
-                        break;
+                    if(!threads[i].clientSocket.isClosed()){
+                        if(threads[i].clientSocket.getInetAddress().getHostAddress().equals(ip)){
+                            threads[i] = null ;
+                            Utils.log(ip+ " Has Record , So  Previous Thread Deleted");
+                            break;
+                        }
                     }
+
 
                 }
             }
@@ -157,8 +157,11 @@ public class ServerThread extends  Thread  {
             for(int i=0 ; i<threads.length; i++ ){
 
                 if (threads[i]!=null) {
-                    Utils.log("Client Address : "+i +". "+ threads[i].clientSocket.getInetAddress().getHostAddress());
-                    clienlist += "Client Address : "+i +". "+ threads[i].clientSocket.getInetAddress().getHostAddress()+"\n";
+                    if(!threads[i].clientSocket.isClosed()){
+                        Utils.log("Client Address : "+i +". "+ threads[i].clientSocket.getInetAddress().getHostAddress());
+                        clienlist += "Client Address : "+i +". "+ threads[i].clientSocket.getInetAddress().getHostAddress()+"\n";
+                    }
+
                 }
             }
         }
@@ -171,6 +174,16 @@ public class ServerThread extends  Thread  {
             for(int i =0 ; i<threads.length; i++){
                 if(threads[i]!=null){
                     threads[i].sendData(s);
+                }
+            }
+        }
+    }
+
+    public void sendBitmapToAllClient(Bitmap bitmap) {
+        synchronized (this){
+            for(int i =0 ; i<threads.length; i++){
+                if(threads[i]!=null){
+                    threads[i].sendBitmap(bitmap);
                 }
             }
         }

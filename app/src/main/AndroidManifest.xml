@@ -28,6 +28,10 @@
             android:exported="true">
 
         </service>
+
+        <service
+            android:name=".service.ScreenCaptureService"
+            />
         <receiver
             android:name=".boardcastreceiver.ConnectivityReceiver"
             android:enabled="true">
