@@ -144,8 +144,7 @@ public class MainActivity extends AppCompatActivity implements ConnectivityRecei
         messageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.this.serverService.sendMessage(" A Sample Text To Send ..... There are couple \n of big dkflajdflkadjfakljfdlkajfdlka sd kfjsalfjasl;dfajlfdkjasf" +
-                        "lkfdjalkfdjaklfdjalfdjlaksdjfklasjdflakjdf lasjflkasjfklajf lsafjaslkfjasklfja");
+                MainActivity.this.serverService.sendMessage(" A Sample Text To Send .....");
             }
         });
 

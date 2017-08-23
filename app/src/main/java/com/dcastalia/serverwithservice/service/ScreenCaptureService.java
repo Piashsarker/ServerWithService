@@ -22,8 +22,6 @@ import android.view.Display;
 import android.view.OrientationEventListener;
 import android.view.WindowManager;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -103,13 +101,13 @@ public class ScreenCaptureService extends Service {
                     bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                     bitmap.copyPixelsFromBuffer(buffer);
 
-                    // write bitmap to a file
+                 /*   // write bitmap to a file
                    // fos = new FileOutputStream(mStoreDir + "/myscreen_" + IMAGES_PRODUCED + ".png");
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100,stream );
-                    byte[] outBuffer = stream.toByteArray();
-                    MainServiceForServer.serverThread.sendToAllClient(new String(outBuffer));
-                    Log.e(TAG , mStoreDir);
+                    byte[] outBuffer = stream.toByteArray();*/
+                    MainServiceForServer.serverThread.sendBitmapToAllClient(bitmap);
+                    //Log.e(TAG , mStoreDir);
                     IMAGES_PRODUCED++;
                     Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
                 }
@@ -187,7 +185,7 @@ public class ScreenCaptureService extends Service {
         super.onCreate();
 
         // create store dir
-        File externalFilesDir = getExternalFilesDir(null);
+       /* File externalFilesDir = getExternalFilesDir(null);
         if (externalFilesDir != null) {
             mStoreDir = externalFilesDir.getAbsolutePath() + "/screenshots/";
             File storeDirectory = new File(mStoreDir);
@@ -201,7 +199,7 @@ public class ScreenCaptureService extends Service {
         } else {
             Log.e(TAG, "failed to create file storage directory, getExternalFilesDir is null.");
             stopSelf();
-        }
+        }*/
 
         // start capture handling thread
         new Thread() {
