@@ -10,4 +10,6 @@
     <string name="client_list">Client list</string>
     <string name="get_list">Get List</string>
     <string name="no_text">Don\'t Recive Yet.</string>
+    <string name="start_screen_share">Start Screen Share</string>
+    <string name="stop_screen_share">Stop Screen Share</string>
 </resources>

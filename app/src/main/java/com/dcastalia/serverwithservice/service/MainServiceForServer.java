@@ -16,7 +16,7 @@ public class MainServiceForServer extends Service implements ServerThread.Client
 
     private static  final String TAG = "MainServiceForServer";
     private static boolean serviceRunning = false ;
-    private static ServerThread serverThread ;
+    public static ServerThread serverThread ;
     private String message ;
     private IBinder binder = new LocalServerBinder();
 

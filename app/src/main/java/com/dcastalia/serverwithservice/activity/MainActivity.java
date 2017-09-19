@@ -1,11 +1,13 @@
 package com.dcastalia.serverwithservice.activity;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,29 +24,23 @@ import com.dcastalia.serverwithservice.Utils.MyApplication;
 import com.dcastalia.serverwithservice.Utils.Utils;
 import com.dcastalia.serverwithservice.boardcastreceiver.ConnectivityReceiver;
 import com.dcastalia.serverwithservice.service.MainServiceForServer;
+import com.dcastalia.serverwithservice.service.ScreenCaptureService;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity  implements ConnectivityReceiver.ConnectivityReceiverListener{
+public class MainActivity extends AppCompatActivity implements ConnectivityReceiver.ConnectivityReceiverListener {
 
-    private TextView  serverText , portText , clientList , messageText ;
-    private Button startServerButton , stopServerButton , messageButton , getListButton ;
-    private String serverIp;
-    private View serverPort  ;
     private final String TAG = MainActivity.class.getSimpleName();
-    private boolean binded=false;
-    private MainServiceForServer serverService;
-
-
-
-    /** This Boardcast Recevier is triggered to get the data from the service **/
+    /**
+     * This Boardcast Recevier is triggered to get the data from the service
+     **/
 
     private final BroadcastReceiver serviceMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
             String action = intent.getAction();
-            if(action.equals(Constant.ACTION_MESSAGE)){
+            if (action.equals(Constant.ACTION_MESSAGE)) {
                 // Toast.makeText(context,, Toast.LENGTH_SHORT).show();
                 String message = intent.getStringExtra(Constant.WELCOME_MESSAGE_KEY);
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
@@ -54,8 +50,13 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
 
         }
     };
-
-
+    private TextView serverText, portText, clientList, messageText;
+    private Button startServerButton, stopServerButton, messageButton, getListButton, startScreenShareButton, stopScreenShareButton;
+    private String serverIp;
+    private View serverPort;
+    private boolean binded = false;
+    private MainServiceForServer serverService;
+    private static final int REQUEST_CODE = 100;
 
     // ServiceConnection For Communicating With Service
     ServiceConnection serverServiceConnection = new ServiceConnection() {
@@ -72,7 +73,6 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
             binded = false;
         }
     };
-
 
 
     @Override
@@ -116,6 +116,8 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
         clientList = (TextView) findViewById(R.id.textClientList);
         getListButton = (Button) findViewById(R.id.btnGetList);
         messageText = (TextView) findViewById(R.id.textClientMessage);
+        startScreenShareButton = (Button) findViewById(R.id.btnStartScreenShare);
+        stopScreenShareButton = (Button) findViewById(R.id.btnStopScreenShare);
 
 
         /*** disable some startUp Button **/
@@ -128,8 +130,8 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
             public void onClick(View view) {
                 try {
 
-                    String clientListString  = MainActivity.this.serverService.getClientList().toString() ;
-                    if(clientListString!=null){
+                    String clientListString = MainActivity.this.serverService.getClientList().toString();
+                    if (clientListString != null) {
                         clientList.setText(clientListString);
                     }
 
@@ -139,15 +141,64 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
             }
         });
 
-      messageButton.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            MainActivity.this.serverService.sendMessage(" A Sample Text To Send .....");
-          }
-      });
+        messageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.serverService.sendMessage(" A Sample Text To Send .....");
+            }
+        });
+
+
+        /** Listen onclick event of StartScreenShare Button **/
+        startScreenShareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startScreenShare();
+            }
+
+
+        });
+
+        /** Listen onclick event of stop Screen Share Button **/
+        stopScreenShareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopScreenShare();
+            }
+        });
+
+
+    }
+
+    private void stopScreenShare() {
+        startService(ScreenCaptureService.getStopIntent(this));
+        MainActivity.this.serverService.sendMessage(Constant.SCREEN_SHARE_STOP);
+        stopScreenShareButton.setEnabled(false);
+        startScreenShareButton.setEnabled(true);
+    }
+
+    private void startScreenShare() {
+
+        /** Initialize Media projection  and get the permission from the use **/
+        MediaProjectionManager mProjectionManager =
+                (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+        startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
+        startScreenShareButton.setEnabled(false);
+        stopScreenShareButton.setEnabled(true);
+    }
 
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        /** If user gives the permission than the Result Code for this request code will be ok, start the service  **/
+        if (requestCode == REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                MainActivity.this.serverService.sendMessage(Constant.SCREEN_SHARE_START);
+                startService(ScreenCaptureService.getStartIntent(this, resultCode, data));
+            }
+        }
     }
 
     private void disableSomeButton() {
@@ -156,12 +207,11 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
     }
 
 
-
-
-
-    /** Do Start Server Work Here. This is a actionPerforming Method for button start Server **/
-    public void startServer(View view){
-        Log.d(TAG , "Server Starting........");
+    /**
+     * Do Start Server Work Here. This is a actionPerforming Method for button start Server
+     **/
+    public void startServer(View view) {
+        Log.d(TAG, "Server Starting........");
         checkConnection();
 
     }
@@ -172,11 +222,10 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
     }
 
     private void manageServerService(boolean isConnected) {
-        if(isConnected){
-            Utils.longToast(this,  "Wifi Available ! Starting Service");
+        if (isConnected) {
+            Utils.longToast(this, "Wifi Available ! Starting Service");
             startServerService();
-        }
-        else{
+        } else {
             Utils.longToast(this, "Disconnected ! Stopping Service ");
             stopServerService();
 
@@ -187,11 +236,10 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
     private void setServerIp(boolean isConnected) {
 
         /** If Internet is available than set the serverIp and Port otherwise set deafault **/
-        if(isConnected){
+        if (isConnected) {
             serverText.setText(Utils.getWifiIpAddress(this));
             portText.setText(String.valueOf(Constant.SERVER_MAIN_PORT));
-        }
-        else{
+        } else {
             serverText.setText(getResources().getString(R.string.not_connected));
             portText.setText(getResources().getString(R.string.no_port));
         }
@@ -199,50 +247,51 @@ public class MainActivity extends AppCompatActivity  implements ConnectivityRece
 
     private void stopServerService() {
 
-            if (binded) {
-                // Unbind Service
-                this.unbindService(serverServiceConnection);
-                binded = false;
-                Utils.log("Service Stopped For Network");
-            }
+        if (binded) {
+            // Unbind Service
+            this.unbindService(serverServiceConnection);
+            binded = false;
+            Utils.log("Service Stopped For Network");
+        }
 
-            // Disable Stop Server Button and Message Button and Enable Start Server Button
+        // Disable Stop Server Button and Message Button and Enable Start Server Button
 
-            messageButton.setEnabled(false);
-            stopServerButton.setEnabled(false);
-            startServerButton.setEnabled(true);
-
+        messageButton.setEnabled(false);
+        stopServerButton.setEnabled(false);
+        startServerButton.setEnabled(true);
 
 
     }
 
     private void startServerService() {
 
-            // Create Intent object for WeatherService.
-            Intent intent = new Intent(this, MainServiceForServer.class);
-            // Call bindService(..) method to bind service with UI.
-            this.bindService(intent, serverServiceConnection, Context.BIND_AUTO_CREATE);
-            Utils.log("Server Service Starting...");
+        // Create Intent object for WeatherService.
+        Intent intent = new Intent(this, MainServiceForServer.class);
+        // Call bindService(..) method to bind service with UI.
+        this.bindService(intent, serverServiceConnection, Context.BIND_AUTO_CREATE);
+        Utils.log("Server Service Starting...");
 
-            //Disable Start Server Button And Enable Stop and Message Button
-            messageButton.setEnabled(true);
-            stopServerButton.setEnabled(true);
-            startServerButton.setEnabled(false);
-
+        //Disable Start Server Button And Enable Stop and Message Button
+        messageButton.setEnabled(true);
+        stopServerButton.setEnabled(true);
+        startServerButton.setEnabled(false);
 
 
     }
 
-    /** This method perform button click of stop Server **/
-    public void stopServer(View view){
-      stopServerService();
+    /**
+     * This method perform button click of stop Server
+     **/
+    public void stopServer(View view) {
+        stopServerService();
     }
-    public void goMessageActivity(View view){
+
+    public void goMessageActivity(View view) {
 
     }
 
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
-            manageServerService(isConnected);
+        manageServerService(isConnected);
     }
 }

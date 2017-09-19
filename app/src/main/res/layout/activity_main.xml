@@ -8,71 +8,99 @@
     android:layout_height="match_parent"
     tools:context="com.dcastalia.serverwithservice.activity.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/server_ip"/>
-    <TextView
-        android:id="@+id/txt_server_ip"
-        android:layout_width="wrap_content"
-        android:text="@string/not_connected"
-        android:layout_height="wrap_content" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/port"/>
-    <TextView
-        android:id="@+id/txt_port"
-        android:text="@string/no_port"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/server_ip"/>
+            <TextView
+                android:id="@+id/txt_server_ip"
+                android:layout_width="wrap_content"
+                android:text="@string/not_connected"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/port"/>
+            <TextView
+                android:id="@+id/txt_port"
+                android:text="@string/no_port"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
 
 
 
 
 
-    <Button
-        android:id="@+id/btnStartServer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="startServer"
-        android:text="@string/start_server"/>
+            <Button
+                android:id="@+id/btnStartServer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="startServer"
+                android:text="@string/start_server"/>
 
 
-    <Button
-        android:id="@+id/btnStopSerer"
-        android:layout_width="wrap_content"
-        android:onClick="stopServer"
-        android:layout_height="wrap_content"
-        android:text="@string/close_server"/>
+            <Button
+                android:id="@+id/btnStopSerer"
+                android:layout_width="wrap_content"
+                android:onClick="stopServer"
+                android:layout_height="wrap_content"
+                android:text="@string/close_server"/>
 
-    <Button
-        android:id="@+id/btnMessage"
-        android:onClick="goMessageActivity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/message"/>
+            <Button
+                android:id="@+id/btnMessage"
+                android:onClick="goMessageActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/message"/>
 
-    <Button
-        android:id="@+id/btnGetList"
-        android:onClick="goMessageActivity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/get_list"/>
+            <Button
+                android:id="@+id/btnGetList"
+                android:onClick="goMessageActivity"
+                android:layout_width="wrap_content"
+                android:enabled="false"
+                android:layout_height="wrap_content"
+                android:text="@string/get_list"/>
 
-    <TextView
-        android:id="@+id/textClientList"
-        android:layout_width="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_height="wrap_content"
-        android:text="@string/client_list"/>
+            <Button
+                android:id="@+id/btnStartScreenShare"
+                android:onClick="goMessageActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/start_screen_share"/>
+            <Button
+                android:id="@+id/btnStopScreenShare"
+                android:onClick="goMessageActivity"
+                android:layout_width="wrap_content"
+                android:enabled="false"
+                android:layout_height="wrap_content"
+                android:text="@string/stop_screen_share"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/no_text"
-        android:id="@+id/textClientMessage"/>
+            <TextView
+                android:id="@+id/textClientList"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_height="wrap_content"
+                android:text="@string/client_list"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_text"
+                android:id="@+id/textClientMessage"/>
+
+
+
+        </LinearLayout>
+
+    </ScrollView>
 
 
 
